@@ -54,6 +54,10 @@ class CreamAgent:
             allowed_tools=[f"mcp__{MARKET_DATA_SERVER_NAME}__*"],
             can_use_tool=build_can_use_tool(self.audit_logger, trading_enabled=False),
             model=self.config.anthropic_model,
+            # Brokerage-connected: don't let project/user/global .mcp.json or
+            # settings add or auto-approve ambient MCP servers/tools outside
+            # what's explicitly wired and gated above.
+            strict_mcp_config=True,
         )
 
     async def connect(self, interactive_auth: bool = True) -> None:

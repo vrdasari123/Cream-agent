@@ -102,11 +102,40 @@ def test_register_client_success():
     client = RobinhoodOAuthClient(
         mcp_url=MCP_URL, http_client=httpx.Client(transport=_mock_transport(handler))
     )
-    client_id, client_secret = client._register_client(
+    client_id = client._register_client(
         {"registration_endpoint": "https://auth.robinhood.com/register"}
     )
     assert client_id == "abc123"
-    assert client_secret is None
+
+
+def test_register_client_ignores_absent_client_secret_field():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"client_id": "abc123"})
+
+    client = RobinhoodOAuthClient(
+        mcp_url=MCP_URL, http_client=httpx.Client(transport=_mock_transport(handler))
+    )
+    client_id = client._register_client(
+        {"registration_endpoint": "https://auth.robinhood.com/register"}
+    )
+    assert client_id == "abc123"
+
+
+def test_register_client_rejects_confidential_client_secret_response():
+    # We register with token_endpoint_auth_method="none" (public client, PKCE
+    # only) and never send a client_secret on token/refresh requests. If the
+    # server hands one back anyway, we must not silently proceed — we'd
+    # authenticate to a server that expects a secret without ever sending it.
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"client_id": "abc123", "client_secret": "shh-its-a-secret"}
+        )
+
+    client = RobinhoodOAuthClient(
+        mcp_url=MCP_URL, http_client=httpx.Client(transport=_mock_transport(handler))
+    )
+    with pytest.raises(OAuthError, match="confidential client"):
+        client._register_client({"registration_endpoint": "https://auth.robinhood.com/register"})
 
 
 def test_register_client_raises_without_registration_endpoint():

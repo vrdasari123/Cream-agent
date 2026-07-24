@@ -9,6 +9,7 @@ catch the one redirect the browser makes after the user approves access.
 from __future__ import annotations
 
 import threading
+import time
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Optional
@@ -25,6 +26,16 @@ class CallbackResult:
 
 class _Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 (stdlib method name)
+        # Only the OAuth redirect (``/callback``) should be treated as the
+        # authorization result — a stray browser request (e.g. a favicon
+        # fetch) hitting this single-use server first must not be mistaken
+        # for it, or the real redirect would arrive after we've already
+        # stopped listening.
+        if urlsplit(self.path).path != "/callback":
+            self.send_response(404)
+            self.end_headers()
+            return
+
         query = parse_qs(urlsplit(self.path).query)
         result = CallbackResult(
             code=query.get("code", [None])[0],
@@ -55,15 +66,28 @@ class _Handler(BaseHTTPRequestHandler):
         pass  # silence default stderr request logging
 
 
+def _serve_until_callback(server: HTTPServer, deadline: float) -> None:
+    # ``handle_request`` returns after *one* request, whether or not it was
+    # the ``/callback`` redirect, so a stray request must not end the loop —
+    # keep serving until we get the real callback or the deadline passes.
+    while getattr(server, "callback_result", None) is None:
+        remaining = deadline - time.time()
+        if remaining <= 0:
+            return
+        server.timeout = remaining
+        server.handle_request()
+
+
 def wait_for_callback(port: int, timeout: float = 300.0) -> CallbackResult:
     """Start a loopback server on ``port``, block until the OAuth redirect
-    arrives (or ``timeout`` seconds elapse), and return what it received.
+    arrives at ``/callback`` (or ``timeout`` seconds elapse), and return what
+    it received. Requests to any other path are ignored.
     """
     server = HTTPServer(("127.0.0.1", port), _Handler)
     server.callback_result = None  # type: ignore[attr-defined]
-    server.timeout = timeout
 
-    thread = threading.Thread(target=server.handle_request, daemon=True)
+    deadline = time.time() + timeout
+    thread = threading.Thread(target=_serve_until_callback, args=(server, deadline), daemon=True)
     thread.start()
     thread.join(timeout=timeout)
 

@@ -98,10 +98,8 @@ class RobinhoodOAuthClient:
 
         client_id = get_secret(_PREFIX + "client_id")
         if not client_id:
-            client_id, client_secret = self._register_client(auth_meta)
+            client_id = self._register_client(auth_meta)
             set_secret(_PREFIX + "client_id", client_id)
-            if client_secret:
-                set_secret(_PREFIX + "client_secret", client_secret)
 
         pkce = generate_pkce_pair()
         state = generate_state()
@@ -241,7 +239,21 @@ class RobinhoodOAuthClient:
             + (f" (last error: {last_error})" if last_error else "")
         )
 
-    def _register_client(self, auth_meta: dict) -> tuple[str, Optional[str]]:
+    def _register_client(self, auth_meta: dict) -> str:
+        """Register a public, PKCE-only client (RFC 7591) and return its
+        ``client_id``.
+
+        We ask for ``token_endpoint_auth_method: "none"`` because this client
+        never sends a ``client_secret`` on token/refresh requests — it's a
+        native app, so a bundled secret couldn't be kept confidential anyway,
+        and PKCE is what actually secures the flow. If the authorization
+        server registers us as a confidential client and hands back a
+        ``client_secret`` regardless, we don't support authenticating with
+        it (no client_secret_post/basic auth is implemented), so we reject
+        that response explicitly rather than silently discarding the secret
+        and sending unauthenticated token requests to a server that expects
+        one.
+        """
         registration_endpoint = auth_meta.get("registration_endpoint")
         if not registration_endpoint:
             raise OAuthError(
@@ -262,7 +274,16 @@ class RobinhoodOAuthClient:
         )
         resp.raise_for_status()
         data = resp.json()
-        return data["client_id"], data.get("client_secret")
+        if data.get("client_secret"):
+            raise OAuthError(
+                "Robinhood's authorization server registered Cream Agent as a "
+                "confidential client and returned a client_secret, but this client "
+                "only implements the public, secret-less PKCE flow "
+                "(token_endpoint_auth_method='none') and has no way to authenticate "
+                "with a client_secret. Refusing to proceed rather than silently "
+                "sending unauthenticated token requests to a server that expects one."
+            )
+        return data["client_id"]
 
     # -- token storage ----------------------------------------------------
 

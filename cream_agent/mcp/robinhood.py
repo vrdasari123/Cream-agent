@@ -23,6 +23,22 @@ TRADE_TOOL_KEYWORDS = (
     "submit",
 )
 
+# Prefixes that mean "this only reads/returns data" — the *only* basis on
+# which cream_agent.safety.gate allows a Robinhood tool to run. This is an
+# allowlist, not the denylist above: a Robinhood tool call is denied unless
+# its bare name starts with one of these, so an unrecognized tool (one whose
+# name doesn't happen to match a trade keyword *or* a read-only prefix, e.g.
+# a hypothetical "create_position" or "withdraw_cash") fails closed instead
+# of being silently allowed.
+READ_ONLY_TOOL_PREFIXES = (
+    "get_",
+    "list_",
+    "fetch_",
+    "read_",
+    "view_",
+    "describe_",
+)
+
 
 def build_robinhood_mcp_server(access_token: str, url: str) -> dict[str, Any]:
     """Build the ``mcp_servers`` entry the Agent SDK expects for Robinhood.
@@ -47,6 +63,20 @@ def is_trade_tool(tool_name: str) -> bool:
     """
     lowered = tool_name.lower()
     return any(keyword in lowered for keyword in TRADE_TOOL_KEYWORDS)
+
+
+def is_read_only_tool(tool_name: str) -> bool:
+    """Whether ``tool_name`` is provably read-only, i.e. safe to allow even
+    though Robinhood hasn't published its exact tool names.
+
+    ``tool_name`` may be fully-qualified (``mcp__robinhood__get_positions``)
+    or bare (``get_positions``) — only the last ``__``-separated segment is
+    checked against :data:`READ_ONLY_TOOL_PREFIXES`. A tool must also not be
+    trade-shaped per :func:`is_trade_tool`, so a name like ``get_order_status``
+    still fails closed rather than being allowed on prefix alone.
+    """
+    bare = tool_name.lower().rsplit("__", 1)[-1]
+    return bare.startswith(READ_ONLY_TOOL_PREFIXES) and not is_trade_tool(tool_name)
 
 
 def summarize_mcp_status(status: Any) -> str:

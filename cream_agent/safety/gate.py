@@ -5,8 +5,15 @@ Design note: we deliberately do *not* pre-approve Robinhood's tools via
 tool names and a wildcard would pre-approve trade-placing tools right along
 with read-only ones. Instead every Robinhood tool call — read-only or not —
 is routed through this ``can_use_tool`` callback, which is the one place
-that decides what's safe to run. Everything not explicitly recognized here
-is denied by default.
+that decides what's safe to run.
+
+This is deny-by-default, not "allow unless it looks trade-shaped": a
+Robinhood tool is only allowed if it's provably read-only per
+``is_read_only_tool`` (see ``cream_agent.mcp.robinhood``). A tool name that
+matches neither the trade-keyword denylist nor the read-only-prefix
+allowlist — e.g. a hypothetical ``create_position`` or ``withdraw_cash`` —
+is denied, not allowed, since Robinhood's real tool names aren't published
+and an unrecognized name could be money-moving.
 """
 
 from __future__ import annotations
@@ -15,7 +22,7 @@ from typing import Any
 
 from claude_agent_sdk import PermissionResultAllow, PermissionResultDeny, ToolPermissionContext
 
-from cream_agent.mcp.robinhood import ROBINHOOD_SERVER_NAME, is_trade_tool
+from cream_agent.mcp.robinhood import ROBINHOOD_SERVER_NAME, is_read_only_tool, is_trade_tool
 from cream_agent.safety.audit import AuditLogger
 
 _ROBINHOOD_PREFIX = f"mcp__{ROBINHOOD_SERVER_NAME}__"
@@ -34,7 +41,10 @@ def build_can_use_tool(audit_logger: AuditLogger, trading_enabled: bool = False)
         tool_name: str, input_data: dict[str, Any], context: ToolPermissionContext
     ):
         if tool_name.startswith(_ROBINHOOD_PREFIX):
-            if is_trade_tool(tool_name) and not trading_enabled:
+            if is_trade_tool(tool_name):
+                if trading_enabled:
+                    audit_logger.log(tool_name=tool_name, input_data=input_data, decision="allow")
+                    return PermissionResultAllow(updated_input=input_data)
                 audit_logger.log(
                     tool_name=tool_name,
                     input_data=input_data,
@@ -48,8 +58,23 @@ def build_can_use_tool(audit_logger: AuditLogger, trading_enabled: bool = False)
                         "confirmation flow. This session is read-only."
                     )
                 )
-            audit_logger.log(tool_name=tool_name, input_data=input_data, decision="allow")
-            return PermissionResultAllow(updated_input=input_data)
+
+            if is_read_only_tool(tool_name):
+                audit_logger.log(tool_name=tool_name, input_data=input_data, decision="allow")
+                return PermissionResultAllow(updated_input=input_data)
+
+            audit_logger.log(
+                tool_name=tool_name,
+                input_data=input_data,
+                decision="deny",
+                reason="Robinhood tool is not on Cream Agent's verified read-only allowlist.",
+            )
+            return PermissionResultDeny(
+                message=(
+                    f"Tool '{tool_name}' isn't recognized as read-only and trading isn't "
+                    "enabled, so Cream Agent is denying it by default."
+                )
+            )
 
         audit_logger.log(
             tool_name=tool_name,
