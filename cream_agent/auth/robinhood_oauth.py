@@ -189,7 +189,10 @@ class RobinhoodOAuthClient:
         origin = f"{parsed.scheme}://{parsed.netloc}"
 
         try:
-            resp = self._http.get(self.mcp_url)
+            # MCP servers speak JSON-RPC over POST; probing with GET can get a
+            # 405 instead of the 401 challenge (observed against Robinhood's
+            # real server), so POST is what actually triggers WWW-Authenticate.
+            resp = self._http.post(self.mcp_url)
             if resp.status_code == 401:
                 metadata_url = _extract_resource_metadata_url(resp.headers.get("WWW-Authenticate", ""))
                 if metadata_url:
@@ -204,10 +207,39 @@ class RobinhoodOAuthClient:
         return resp.json()
 
     def _discover_authorization_server_metadata(self, auth_server_base: str) -> dict:
-        base = auth_server_base.rstrip("/")
-        resp = self._http.get(f"{base}/.well-known/oauth-authorization-server")
-        resp.raise_for_status()
-        return resp.json()
+        """Fetch RFC 8414 authorization server metadata.
+
+        RFC 8414 says the well-known suffix is inserted *between* the origin
+        and the issuer's path (``https://host/.well-known/oauth-authorization-server/path``),
+        not appended after the full path. Verified against Robinhood's real
+        server: ``/mcp/trading/.well-known/oauth-authorization-server`` 404s,
+        while the path-insertion form returns the document. We still try a
+        couple of fallback shapes in case a future server (or a different
+        MCP integration reusing this client) doesn't follow the RFC exactly.
+        """
+        parsed = urlsplit(auth_server_base)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        path = parsed.path.rstrip("/")
+
+        candidates = [f"{origin}/.well-known/oauth-authorization-server{path}"]
+        if path:
+            candidates.append(f"{origin}/.well-known/oauth-authorization-server")
+            candidates.append(f"{origin}{path}/.well-known/oauth-authorization-server")
+
+        last_error: Optional[Exception] = None
+        for url in candidates:
+            try:
+                resp = self._http.get(url)
+                if resp.status_code == 200:
+                    return resp.json()
+            except httpx.HTTPError as e:
+                last_error = e
+
+        raise OAuthError(
+            f"Could not find authorization server metadata for {auth_server_base}; "
+            f"tried {candidates}"
+            + (f" (last error: {last_error})" if last_error else "")
+        )
 
     def _register_client(self, auth_meta: dict) -> tuple[str, Optional[str]]:
         registration_endpoint = auth_meta.get("registration_endpoint")
