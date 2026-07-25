@@ -1,9 +1,11 @@
 # Cream Agent Repo Instructions
 
-Cream Agent is a Codex-first trading workspace layered on top of Robinhood
-Trading MCP. This repo does not own user authentication, does not run a custom
-Robinhood OAuth flow for the supported product path, and does not require an
-Anthropic API key for the primary experience.
+Cream Agent is an MCP-native trading workspace layered on top of Robinhood
+Trading MCP. Codex is the first verified client, but the repo is designed to be
+portable to any MCP-capable client that can add/login Robinhood Trading MCP and
+use repo instructions/workflows. This repo does not own user authentication,
+does not run a custom Robinhood OAuth flow for the supported product path, and
+does not require an Anthropic API key for the primary experience.
 
 ## Operating mode
 
@@ -41,11 +43,11 @@ Anthropic API key for the primary experience.
 When the user intent matches one of these workflows, use the corresponding doc:
 
 - Account review:
-  [docs/workflows/account-review.md](/Users/work/.codex/worktrees/17f2/Cream Agent/docs/workflows/account-review.md)
+  [docs/workflows/account-review.md](docs/workflows/account-review.md)
 - Portfolio and risk review:
-  [docs/workflows/portfolio-risk-review.md](/Users/work/.codex/worktrees/17f2/Cream Agent/docs/workflows/portfolio-risk-review.md)
+  [docs/workflows/portfolio-risk-review.md](docs/workflows/portfolio-risk-review.md)
 - Order ticket preparation:
-  [docs/workflows/order-ticket.md](/Users/work/.codex/worktrees/17f2/Cream Agent/docs/workflows/order-ticket.md)
+  [docs/workflows/order-ticket.md](docs/workflows/order-ticket.md)
 
 ## Artifacts
 

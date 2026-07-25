@@ -1,4 +1,4 @@
-"""Legacy standalone CLI retained during the Codex-first migration."""
+"""Legacy standalone CLI retained during the MCP-native migration."""
 
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ from cream_agent.mcp.robinhood import summarize_mcp_status
 
 BANNER = """
 Cream Agent legacy standalone CLI
-This path is quarantined during the Codex-first migration.
-Preferred path: configure robinhood-trading MCP in Codex, then open this repo in Codex.
+This path is quarantined during the MCP-native migration.
+Preferred path: configure robinhood-trading MCP in an MCP-capable client, then open this repo there.
 
 Commands: /status  /disconnect-robinhood  /quit
 """

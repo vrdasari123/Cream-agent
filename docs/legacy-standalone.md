@@ -8,8 +8,11 @@ That is no longer Cream Agent's primary product direction.
 
 As of July 25, 2026:
 
-- supported path: open the repo in Codex after configuring Robinhood Trading
-  MCP in your own client
+- supported path: open/use the repo in an MCP-capable client after configuring
+  Robinhood Trading MCP there
+- verified today: Codex
+- future client targets: Claude, Cursor, Windsurf, Kimi, ChatGPT, and other
+  MCP-capable clients
 - unsupported primary path: use Cream Agent as a self-contained standalone app
   that handles Robinhood authentication itself
 
@@ -33,4 +36,5 @@ These areas still exist for now:
 - `cream_agent/cli/`
 
 They are retained to keep this migration scoped and low-risk. Future cleanup
-can remove or archive them once the Codex-first layer is fully established.
+can remove or archive them once the MCP-native workspace layer is fully
+established.

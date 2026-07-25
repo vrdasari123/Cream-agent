@@ -1,8 +1,9 @@
 # Contributing to Cream Agent
 
-Cream Agent's primary product is now a Codex-first workspace layer for
-Robinhood Trading MCP. Changes should strengthen durable instructions,
-workflow quality, and trading safety before they add more runtime complexity.
+Cream Agent's primary product is now an MCP-native workspace layer for
+Robinhood Trading MCP, with Codex as the first verified client. Changes should
+strengthen durable instructions, workflow quality, and trading safety before
+they add more runtime complexity.
 
 ## Dev setup
 

@@ -1,9 +1,9 @@
 # Cream Agent
 
-Cream Agent is a Codex-first trading workspace for Robinhood Trading MCP. It
-is not another chat app, not a hosted agent service, and not a replacement for
-your MCP-capable client. You clone this repo, connect Robinhood Trading MCP in
-your own client, then open Codex from inside this folder so the repo's durable
+Cream Agent is an MCP-native trading workspace for Robinhood Trading MCP. It is
+not another chat app, not a hosted agent service, and not a replacement for your
+MCP-capable client. You clone this repo, connect Robinhood Trading MCP in your
+client, then open or use the repo from that client so Cream Agent's durable
 instructions, workflows, and safety rules are loaded with the session.
 
 > **Not affiliated with Robinhood.** This is an independent project.
@@ -11,16 +11,16 @@ instructions, workflows, and safety rules are loaded with the session.
 > order, approval, and portfolio decision.
 > **Cream Agent is not a trading bot, not a login provider, and not a
 > replacement for your judgment.** It is a disciplined operating layer for how
-> you use Codex with Robinhood Trading MCP.
+> you use an MCP-capable client with Robinhood Trading MCP.
 
 ## Why this exists
 
-If you already have Codex and Robinhood Trading MCP, the obvious question is:
-why clone another repo at all?
+If you already have an MCP-capable client and Robinhood Trading MCP, the
+obvious question is: why clone another repo at all?
 
-Because plain Codex gives you raw MCP access, but not a persistent trading
-operating layer. Without a repo like this, you either trade from ad hoc prompts
-or rewrite your own rules each session.
+Because a general MCP client gives you raw tool access, but not a persistent
+trading operating layer. Without a repo like this, you either trade from ad hoc
+prompts or rewrite your own rules each session.
 
 Cream Agent exists to make your trading workflow more disciplined:
 
@@ -28,44 +28,54 @@ Cream Agent exists to make your trading workflow more disciplined:
 - repeatable account review and portfolio/risk review workflows
 - explicit order-ticket friction before any live order action
 - audit and journal conventions so decisions do not disappear into chat history
-- a portable workspace structure that can later move to other MCP-capable
-  clients
+- a portable workspace structure that can move across MCP-capable clients
 
-In product terms: Codex is the general-purpose engine. Cream Agent is the
-trading operating layer you keep around it.
+In product terms: your MCP client is the general-purpose engine. Cream Agent is
+the trading operating layer you keep around it.
 
 ## Product direction
 
 As of July 25, 2026, Cream Agent's primary product is:
 
-- A persistent trading policy layer on top of Codex.
+- A persistent trading policy layer on top of MCP-capable clients.
 - Read-only-first workflows for account review and portfolio/risk review.
 - An explicit order ticket workflow that prepares a trade without submitting it.
-- Durable artifacts for notes, auditability, and later portability to other
-  MCP-capable clients.
+- Durable artifacts for notes, auditability, and portability across clients.
 
 Cream Agent is **not**:
 
 - A standalone M1 chat application.
 - An Anthropic API key flow.
 - A custom Robinhood OAuth implementation for end users.
+- Tied to one MCP client.
 
 Legacy Python code for the earlier standalone path still exists in this repo,
 but it is quarantined and no longer the recommended product surface. See
 [docs/legacy-standalone.md](docs/legacy-standalone.md).
 
-## Why use Cream Agent instead of plain Codex?
+## Why use Cream Agent instead of a plain MCP client?
 
-| Plain Codex + MCP | Cream Agent |
+| Plain MCP client | Cream Agent |
 | --- | --- |
 | Raw tool access | Raw tool access plus persistent trading discipline |
 | Prompts are easy to improvise and forget | Workflows and safety rules live in the repo |
 | Order handling depends on what you remember to ask | Order-ticket preparation and final confirmation are explicit |
 | Notes often stay trapped in chat history | Journal and audit conventions are part of the workflow |
-| Portable only if you rebuild your setup elsewhere | Structured to be portable to future MCP-capable clients |
+| Portable only if you rebuild your setup elsewhere | Structured to travel across MCP-capable clients |
 
-Cream Agent is for users who want Codex to behave less like a blank terminal
-and more like a consistent trading workspace.
+Cream Agent is for users who want their MCP client to behave less like a blank
+terminal and more like a consistent trading workspace.
+
+## Client support
+
+Cream Agent is client-agnostic in design, but Codex is the first verified setup
+path.
+
+| Support level | Clients | Status |
+| --- | --- | --- |
+| Verified now | Codex | Documented setup and doctor check |
+| Planned/future | Claude, Cursor, Windsurf, Kimi, ChatGPT, and other MCP-capable clients | Workflow portability target |
+| Requirement | Any client | Must be able to add/login Robinhood Trading MCP and use this repo's instructions/workflows |
 
 ## User journey
 
@@ -78,7 +88,7 @@ cd Cream-agent
 
 ### 2. Add Robinhood Trading MCP in Codex
 
-Run these commands exactly:
+Codex is the first verified client. Run these commands exactly:
 
 ```bash
 codex mcp add robinhood-trading --url https://agent.robinhood.com/mcp/trading
@@ -97,7 +107,7 @@ From inside the repo folder:
 codex
 ```
 
-Opening Codex here matters because the repo contains durable instructions in
+Opening your client here matters because the repo contains durable instructions in
 [AGENTS.md](AGENTS.md) and reusable workflow docs under
 [docs/workflows](docs/workflows).
 
@@ -119,7 +129,8 @@ risk notes, and prepared tickets do not vanish into a single chat session.
 
 ### 1. Install and verify Codex
 
-Cream Agent assumes you already have the `codex` CLI available on your machine.
+For the verified path, Cream Agent assumes you already have the `codex` CLI
+available on your machine.
 
 What you should see:
 
@@ -144,7 +155,7 @@ This check is read-only. It looks for:
 - whether `codex mcp list` runs
 - whether `robinhood-trading` appears in that local MCP configuration
 
-It does not place trades, fetch account data, or modify Codex settings.
+It does not place trades, fetch account data, or modify client settings.
 
 ## Session model
 
@@ -194,22 +205,23 @@ before final confirmation.
 ## Repo layout
 
 ```text
-AGENTS.md                 Durable Codex operating instructions
+AGENTS.md                 Durable client operating instructions
 docs/workflows/           Repeatable trading workflows and templates
-cream_agent/doctor.py     Local read-only onboarding/doctor check
+cream_agent/doctor.py     Local read-only Codex onboarding/doctor check
 cream_agent/              Legacy standalone runtime, now quarantined
 tests/                    Safety, config, and utility tests
 ```
 
 ## Current migration boundary
 
-This first Codex-first release updates the repo's operating layer and local
-checks. It does **not** yet remove every legacy module from the old standalone
-app architecture.
+This first MCP-native release updates the repo's operating layer and local
+Codex verification checks. It does **not** yet remove every legacy module from
+the old standalone app architecture.
 
 What changed now:
 
-- top-level docs now describe the Codex-first workflow
+- top-level docs now describe the MCP-native workflow with Codex as the first
+  verified client
 - durable session rules live in `AGENTS.md`
 - workflow templates exist for read-only review and order preparation
 - a read-only doctor utility checks local Codex/MCP setup

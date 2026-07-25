@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cream-agent"
 version = "0.1.0"
-description = "Codex-first trading workspace layer for Robinhood Trading MCP, with durable safety rules, workflows, and local onboarding checks."
+description = "MCP-native trading workspace layer for Robinhood Trading MCP, with durable safety rules, workflows, and local onboarding checks."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
