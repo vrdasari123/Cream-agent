@@ -14,6 +14,9 @@ MCP_URL = "https://agent.robinhood.com/mcp/trading"
 def isolated_home(tmp_path, monkeypatch):
     monkeypatch.setenv("CREAM_AGENT_HOME", str(tmp_path))
     secrets._fallback_warned = False
+    monkeypatch.setattr("keyring.get_password", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("no keyring backend")))
+    monkeypatch.setattr("keyring.set_password", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("no keyring backend")))
+    monkeypatch.setattr("keyring.delete_password", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("no keyring backend")))
 
 
 def test_extract_resource_metadata_url_parses_www_authenticate_header():
