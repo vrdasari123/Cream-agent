@@ -54,9 +54,12 @@ When the user intent matches one of these workflows, use the corresponding doc:
 - Prefer producing compact, reusable artifacts instead of one-off chat-only
   answers.
 - When a review is substantial, suggest or create a dated note under
-  `docs/journal/` if the user wants a saved artifact.
+  `memory/journal/` if the user wants a saved artifact.
 - Keep any saved artifact factual and clearly separate tool-derived facts from
   reasoning or opinion.
+- Structured event-emission conventions are planned under the memory-store
+  epic. Until those conventions land, avoid inventing incompatible ad-hoc
+  formats for durable artifacts.
 
 ## Legacy code boundary
 

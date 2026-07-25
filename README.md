@@ -42,6 +42,11 @@ As of July 25, 2026, Cream Agent's primary product is:
 - An explicit order ticket workflow that prepares a trade without submitting it.
 - Durable artifacts for notes, auditability, and portability across clients.
 
+The planned product layer includes a local memory store for durable workspace
+artifacts and an optional local Observatory UI. The Observatory only observes
+workspace artifacts: it never trades, authenticates users, calls MCP tools, or
+holds credentials.
+
 Cream Agent is **not**:
 
 - A standalone M1 chat application.
@@ -124,6 +129,12 @@ prepare an order ticket:
 
 Use the repo's journal and workflow conventions so important trade reasoning,
 risk notes, and prepared tickets do not vanish into a single chat session.
+User-saved journal entries belong under `memory/journal/`.
+
+The `memory/` directory is ignored by default because it may contain real
+account data. Users working in a private clone may deliberately un-ignore
+selected journal or knowledge files if they want to version them, after
+reviewing the contents and accepting the privacy risk.
 
 ## Quick start
 
