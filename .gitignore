@@ -13,5 +13,5 @@ venv/
 .env
 *.log
 .creamagent/
-memory/
+/memory/
 .DS_Store
