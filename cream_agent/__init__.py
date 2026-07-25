@@ -1,3 +1,3 @@
-"""Cream Agent — an open-source AI agent for Robinhood's Agentic Trading (MCP) integration."""
+"""Cream Agent — an MCP-native trading workspace layer for Robinhood Trading MCP."""
 
 __version__ = "0.1.0"

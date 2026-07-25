@@ -5,6 +5,7 @@ __pycache__/
 build/
 dist/
 .venv/
+.venv*/
 venv/
 .pytest_cache/
 .mypy_cache/
@@ -12,4 +13,5 @@ venv/
 .env
 *.log
 .creamagent/
+memory/
 .DS_Store

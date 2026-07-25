@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cream-agent"
 version = "0.1.0"
-description = "Open-source AI agent for Robinhood's Agentic Trading (MCP) integration — bring your own Claude API key, chat about stocks, and (in later milestones) execute trades and workflows."
+description = "MCP-native trading workspace layer for Robinhood Trading MCP, with durable safety rules, workflows, and local onboarding checks."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -29,6 +29,7 @@ dev = ["pytest>=8.0", "pytest-asyncio>=0.24"]
 
 [project.scripts]
 cream-agent = "cream_agent.cli.main:run"
+cream-agent-doctor = "cream_agent.doctor:main"
 
 [tool.setuptools.packages.find]
 include = ["cream_agent*"]
