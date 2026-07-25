@@ -1,4 +1,4 @@
-"""Cream Agent's CLI chat REPL (the M1 interface — a local web UI arrives later)."""
+"""Legacy standalone CLI retained during the Codex-first migration."""
 
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ from cream_agent.config.settings import load_config
 from cream_agent.mcp.robinhood import summarize_mcp_status
 
 BANNER = """
-Cream Agent (M1 — read-only build)
-Chat about stocks, or ask about your Robinhood positions/watchlists if connected.
-Trade execution isn't enabled in this build yet — that's a later milestone.
+Cream Agent legacy standalone CLI
+This path is quarantined during the Codex-first migration.
+Preferred path: configure robinhood-trading MCP in Codex, then open this repo in Codex.
 
 Commands: /status  /disconnect-robinhood  /quit
 """
