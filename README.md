@@ -42,8 +42,9 @@ As of July 25, 2026, Cream Agent's primary product is:
 - An explicit order ticket workflow that prepares a trade without submitting it.
 - Durable artifacts for notes, auditability, and portability across clients.
 
-The planned product layer includes a local memory store for durable workspace
-artifacts and an optional local Observatory UI. The Observatory only observes
+The product layer now includes a private local memory foundation for durable
+events, knowledge, journal notes, and order records. A later optional local
+Observatory UI will only observe
 workspace artifacts: it never trades, authenticates users, calls MCP tools, or
 holds credentials.
 
@@ -136,6 +137,19 @@ account data. Users working in a private clone may deliberately un-ignore
 selected journal or knowledge files if they want to version them, after
 reviewing the contents and accepting the privacy risk.
 
+Safe starter files live under [`templates/memory/`](templates/memory/). Copy
+that layout into `memory/`, then fill in only the knowledge relevant to you.
+
+Offline helpers are available after package installation:
+
+```bash
+cream-agent log --session <id> --type session_started --data '{"purpose":"review"}'
+cream-agent order create --session <id> --ticket '<complete-ticket-json>'
+```
+
+These helpers validate and write local files only. They never call MCP,
+brokerage, authentication, consent, or network APIs.
+
 ## Quick start
 
 ### 1. Install and verify Codex
@@ -218,6 +232,9 @@ before final confirmation.
 ```text
 AGENTS.md                 Durable client operating instructions
 docs/workflows/           Repeatable trading workflows and templates
+templates/memory/         Safe scaffolding for ignored private runtime memory
+schemas/                  Versioned event and order-record JSON schemas
+cream_agent/memory/       Stdlib-only validators and atomic file helpers
 cream_agent/doctor.py     Local read-only Codex onboarding/doctor check
 cream_agent/              Legacy standalone runtime, now quarantined
 tests/                    Safety, config, and utility tests

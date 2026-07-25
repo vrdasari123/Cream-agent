@@ -57,9 +57,70 @@ When the user intent matches one of these workflows, use the corresponding doc:
   `memory/journal/` if the user wants a saved artifact.
 - Keep any saved artifact factual and clearly separate tool-derived facts from
   reasoning or opinion.
-- Structured event-emission conventions are planned under the memory-store
-  epic. Until those conventions land, avoid inventing incompatible ad-hoc
-  formats for durable artifacts.
+
+## Private memory conventions
+
+`memory/` is the private runtime data plane and is ignored by git by default.
+Never put real account data, order records, session events, or personal notes
+under tracked `templates/`. Safe starter files live under `templates/memory/`.
+
+At the beginning of a task:
+
+1. Choose a safe session ID containing only letters, digits, `.`, `_`, or `-`.
+2. Emit `session_started` with `cream-agent log`.
+3. Read only the knowledge files relevant to the workflow. Log each consulted
+   path as `memory_read`; absence means unknown, not permission.
+4. Emit `workflow_started` before following a workflow document.
+
+During a task:
+
+- Emit `mcp_call` immediately before every Robinhood Trading MCP call, naming
+  the tool and operation but excluding credentials and unnecessary sensitive
+  payloads.
+- Emit `mcp_result` immediately after it with outcome and a redacted summary.
+- Emit `memory_read` and `memory_write` for every private memory file used.
+- Emit `decision` for material reasoning or a safety stop.
+- Never store credentials, tokens, consent artifacts, or full raw MCP
+  responses in memory.
+
+At completion:
+
+- Write substantial factual notes to `memory/journal/` when requested and emit
+  `journal_written`.
+- Emit `workflow_completed`, then `session_completed`. If stopped or blocked,
+  record that outcome rather than pretending the workflow completed.
+
+Example:
+
+```bash
+cream-agent log --session 2026-07-25-review-001 \
+  --type session_started --data '{"purpose":"read-only account review"}'
+```
+
+The helper validates schema v1 and atomically appends to
+`memory/events/<session>.jsonl`. It is stdlib-only and never uses the network,
+MCP, brokerage APIs, authentication, or consent. If the installed entry point
+is unavailable, use `python -m cream_agent.cli.main` with the same arguments.
+
+## Order records and confirmation
+
+- Preparing a complete ticket creates `memory/orders/<order-id>.json` in
+  `draft`; it does not authorize or submit anything.
+- Consult `memory/knowledge/risk-limits.md`,
+  `memory/knowledge/preferences.md`, and a matching ticker thesis when present.
+  Surface conflicts before confirmation.
+- A live order request requires a `confirmation_requested` event containing
+  the order ID and exact ticket fingerprint, followed by a user-authored
+  `confirmation_received` event for those same values in the same session.
+- Move a record to `confirmed` only after that final confirmation.
+- Move it to `submitted` only after the live MCP submission succeeds. The
+  offline state helper rejects this transition unless the matching
+  `confirmation_received` event exists.
+- Record fills, partial fills, cancellation, rejection, or abandonment as
+  explicit legal transitions. Files are replaced atomically; history is
+  append-only within each record.
+- Recording a state never performs the brokerage action. The agent/client owns
+  all MCP calls and remains bound by the trade safety rules above.
 
 ## Legacy code boundary
 

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cream-agent.local/schemas/memory-event-v1.json",
+  "title": "Cream Agent memory event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "ts", "session", "seq", "type", "actor", "data"],
+  "properties": {
+    "v": {"const": 1},
+    "ts": {"type": "string", "format": "date-time"},
+    "session": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "seq": {"type": "integer", "minimum": 1},
+    "type": {
+      "enum": [
+        "session_started",
+        "session_completed",
+        "workflow_started",
+        "workflow_completed",
+        "memory_read",
+        "memory_write",
+        "mcp_call",
+        "mcp_result",
+        "decision",
+        "ticket_created",
+        "ticket_updated",
+        "confirmation_requested",
+        "confirmation_received",
+        "order_submitted",
+        "order_status_changed",
+        "journal_written"
+      ]
+    },
+    "actor": {"enum": ["agent", "client", "mcp", "system", "user"]},
+    "data": {"type": "object"}
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cream-agent.local/schemas/account-snapshot-v1.json",
+  "title": "Cream Agent normalized account snapshot v1",
+  "description": "Offline normalized fixture envelope. Issue #41 owns the writer and issue #42 owns mapping from real MCP fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "ts", "session", "source", "balances", "positions"],
+  "properties": {
+    "v": {"const": 1},
+    "ts": {"type": "string", "format": "date-time"},
+    "session": {"type": "string", "minLength": 1},
+    "source": {"const": "robinhood-trading-mcp"},
+    "balances": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "cash": {"type": "string"},
+        "buying_power": {"type": "string"},
+        "total_equity": {"type": "string"}
+      }
+    },
+    "positions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["symbol", "quantity", "average_cost", "mark"],
+        "properties": {
+          "symbol": {"type": "string"},
+          "quantity": {"type": "string"},
+          "average_cost": {"type": "string"},
+          "mark": {"type": "string"}
+        }
+      }
+    }
+  }
+}
